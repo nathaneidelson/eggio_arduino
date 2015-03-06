@@ -1,5 +1,5 @@
 
-#define PATTERN_SIZE 8
+#define PATTERN_SIZE 30
 #define VIBRATION_DURATION 100
 
 /* The time cycle of the pattern. */
@@ -15,7 +15,8 @@ bool motor_on = false;
 
 /* Scalars to make 1->10 scale work. */
 int delay_scale = 1000;
-int intensity_scale = 20;
+int intensity_scale = 15;
+int intensity_offset = 70;
 
 /* Pattern of meditation. 
    Each pair (i, d) represents a vibration in the pattern with intensity i and delay d. 
@@ -23,13 +24,39 @@ int intensity_scale = 20;
    Both i and d range on a scale from 1 to 10. */
 int pattern[PATTERN_SIZE][2]  = 
 {  
-{7, 1}, 
-{7, 1},
+{9, .1}, 
+{9, 3},
+
+// Range of intensitys
+{10, .5},
+{9, .5},
+{8, .5},
+{7, .5},
+{6, .5},
+{5, .5},
+{4, .5},
+{3, .5},
+{2, .5},
+{1, .5},
+{0, .5},
+
 // Marks the start
-{6, 3},
+{7, 3},
+{7, 3},
+{6, 4},
 {6, 4},
 {6, 5},
-{6, 6},
+{5, 6},
+{5, 6},
+{5, 7},
+{5, 7},
+{5, 7},
+{5, 7},
+
+{3, 7},
+{3, 7},
+{3, 7},
+
 // Marks the end
 {7, 1}, 
 {7, 1}
@@ -37,7 +64,7 @@ int pattern[PATTERN_SIZE][2]  =
 
 int intensity_for_position (int pos)
 {
-  return pattern[pos][0] * intensity_scale;
+  return intensity_offset + pattern[pos][0] * intensity_scale;
 }
 
 int delay_for_position (int pos)
@@ -64,17 +91,8 @@ void loop()
     curr_pos++;
   }
   
-
-
   vibration_timer++;
   time++;
-  
-//    Serial.print(vibration_timer);
-//    Serial.print("\n");
-
-  // Read values of sensors
-  // Record values
-  // Send to processing
 }
 
 /* Returns true if the motor was switched off, so the delay wait can begin. */
@@ -83,22 +101,14 @@ bool switch_motor_with_intensity(int intensity)
     Serial.print(vibration_timer % VIBRATION_DURATION);
     Serial.print("\n");
   if (vibration_timer % VIBRATION_DURATION == 0) {
+      vibration_timer = 0;
       if (motor_on) {
-        vibration_timer = 0;
-        Serial.print("motor off: ");
-        Serial.print(intensity);
-        Serial.print("\n");
-
         analogWrite (11, 0);
         motor_on = false;
         return true;
       } else {
-        vibration_timer = 0;
-        Serial.print("motor on: ");
-        Serial.print(intensity);
-        Serial.print("\n");
-
-        analogWrite (11, intensity);
+        if (intensity > intensity_offset && intensity <= 250)
+          analogWrite (11, intensity);
         motor_on = true;
         return false;
       }
